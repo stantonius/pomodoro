@@ -21,8 +21,8 @@ exports.dialogflowWebhook = functions
         agent.add(`I'm sorry, can you try again?`);
       }
 
-      function pissoff(agent) {
-        agent.add(`Piss off you twat`);
+      function tester(agent) {
+        agent.add(`Dialogflow connects to Firebase`);
       }
     
 /*
@@ -42,7 +42,7 @@ exports.dialogflowWebhook = functions
     let intentMap = new Map();
     intentMap.set('Default Welcome Intent', defaultWelcome);
     intentMap.set('Default Fallback Intent', fallback);
-    intentMap.set('Does this even work', pissoff);
+    intentMap.set('Does this even work', tester);
     
     
     agent.handleRequest(intentMap);
