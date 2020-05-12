@@ -1,10 +1,22 @@
 'use strict';
-
+// Dialogflow & Firebase imports 
 const functions = require('firebase-functions');
 const { WebhookClient } = require('dialogflow-fulfillment');
+const admin = require("firebase-admin");
+const serviceAccount = require("./pomodoro_service_account_credentials.json");
 
-exports.dialogflowWebhook = functions
-    .region('europe-west2')
+// Additional libraries
+const moment = require('moment');
+
+// Firestore setup and initialisation
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://pomodoro-90fd7.firebaseio.com"
+});
+const db = admin.firestore();
+//const tasks = db.collection('users').doc('jeffd23');
+
+exports.dialogflowWebhookResponse = functions
     .https.onRequest(async (request, response) => {
     const agent = new WebhookClient({ request, response });
 
@@ -12,17 +24,31 @@ exports.dialogflowWebhook = functions
 
     // START OF FUNCTIONS LIST
     
+    // Generic functions
     async function defaultWelcome(agent) {
-        agent.add(`Righto. I will tell Lyd to piss off for a quick 30`);
+        agent.add(`Yo. I am your productivity pal. What can I help with?`);
     }
 
     function fallback(agent) {
-        agent.add(`I didn't understand`);
-        agent.add(`I'm sorry, can you try again?`);
+        agent.add(`I didn't get that. Try again or say 'Help' for other things I can help with.`);
       }
 
-      function tester(agent) {
-        agent.add(`Dialogflow connects to Firebase`);
+    //Productivity functions
+      function pomodoroInitiate(agent) {
+        // Initial entry to pomodoro. Check that worktype is provided.
+        let [duration, workType] = [agent.parameters['duration'], agent.parameters['workType']]
+        // Capture any require entities (as slots)
+        let missingSlots = []
+        if (!duration) {duration = 30}
+        if (!workType) {missingSlots.push('work type')}
+
+        if (missingSlots.length ===1 ) {
+          agent.add(`What ${missingSlots[0]} is this for - work or personal?`)
+        } else {
+          // If all required parameters/slots provided, upload this info to 
+          
+          agent.add(`Righto. Lets start a ${workType} pomodoro for ${duration}. Starting the timer...now.`);
+        }
       }
     
 /*
@@ -42,7 +68,7 @@ exports.dialogflowWebhook = functions
     let intentMap = new Map();
     intentMap.set('Default Welcome Intent', defaultWelcome);
     intentMap.set('Default Fallback Intent', fallback);
-    intentMap.set('Does this even work', tester);
+    intentMap.set('Start a Pomodoro', pomodoroInitiate);
     
     
     agent.handleRequest(intentMap);
