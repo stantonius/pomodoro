@@ -1,8 +1,12 @@
+/**
+ * Triggered by PubSub topic
+ */
+
+
 const functions = require('firebase-functions');
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
+exports.pomodoroTimer = functions.pubsub.topic('pomodoro-timer').onPublish((message, context) => {
+    const messageBody = message.data ? Buffer.from(message.data, 'base64').toString() : null;
+    console.log('The function was triggered at ', context.timestamp)
+    console.log(messageBody)
+})
