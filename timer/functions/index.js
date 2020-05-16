@@ -9,4 +9,6 @@ exports.pomodoroTimer = functions.pubsub.topic('pomodoro-timer').onPublish((mess
     const messageBody = message.data ? Buffer.from(message.data, 'base64').toString() : null;
     console.log('The function was triggered at ', context.timestamp)
     console.log(messageBody)
+    // Retrieve any active sessions
+    
 })
