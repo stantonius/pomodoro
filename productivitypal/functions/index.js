@@ -81,14 +81,35 @@ exports.dialogflowWebhookResponse = functions.https.onRequest(
     // Trello productivity 
 
     async function projectsList(agent) {
-      let trelloLists = []    
       const mainBoard = '5ec072eda01167532fd6dadf'
-      const lists = trello.getListsOnBoard(mainBoard)
-      lists.then((list) => {
-        trelloLists.push(list)
-      })
+      const trelloLists = await trello.getListsOnBoard(mainBoard)
+      let listItems = trelloLists.map(list => list.name).join(', ')
       agent.add(
-        
+        `You current projects are: ${listItems}`
+      )
+    }
+
+    async function cardsListForProject(agent) {
+      const projectName = agent.parameters['project']
+      const mainBoard = '5ec072eda01167532fd6dadf'
+      if (projectName) {
+        const trelloLists = await trello.getListsOnBoard(mainBoard)
+        const projectID = trelloLists.filter(pro => pro.name === projectName)[0].id
+        const cardsOnList = await trello.getCardsOnList(projectID)
+        const cards = cardsOnList.map(card => card.name).join(', ')
+        agent.add(
+          `These are the In Progress tasks for ${projectName}: ${cards}`
+        )
+      } else {
+        agent.add(
+          "There is no project by that name. Say 'Create Project' to create one."
+        )
+      }
+
+      const trelloLists = await trello.getListsOnBoard(mainBoard)
+      let listItems = trelloLists.map(list => list.name).join(', ')
+      agent.add(
+        `You current projects are: ${listItems}`
       )
     }
 
@@ -98,6 +119,7 @@ exports.dialogflowWebhookResponse = functions.https.onRequest(
     intentMap.set("Default Fallback Intent", fallback);
     intentMap.set("Start a Pomodoro", pomodoroInitiate);
     intentMap.set("Trello - Projects - List All", projectsList)
+    intentMap.set("Trello - Project - All Cards", cardsListForProject)
 
     agent.handleRequest(intentMap);
   }
